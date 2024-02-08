@@ -65,6 +65,9 @@ m>=7    - Aprovado
   npm start
   ```
 
+## Link público da planilha
+https://docs.google.com/spreadsheets/d/1i3sFdZedqNbSTxAlDi_JCbdUU69UgUCFWNLh9dz06G0/edit#gid=0
+
 ## 📱 Contatos
   - 📧 guih.fleme@gmail.com
   - 📱 (41) 995017907

@@ -1,6 +1,6 @@
 # DESAFIO TUNTS.ROCKS 2024
 
-![DevTraining - Tunts.Rocks](https://lh7-us.googleusercontent.com/QAkXMkvZcBGO7XCDrhwizsBS6hibO4gf57E03S5a9C5Eeivlb3gbVlBcLiDa2I-5wuvfInFqMWGTp3w0c1nHEJe-2jzrvDG3rSRmYiuclQ079DQUK9GBvPs0ziJPmrz9RigFFYipsRKwQV5D3JqdjlU)
+![DevTraining - Tunts.Rocks](./devtraining.png)
 Desafio técnico do < DevTraining/> da Tunts.Rocks.
 
 ## Descrição do desafio

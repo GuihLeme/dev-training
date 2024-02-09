@@ -2,69 +2,72 @@ import { getAuthSheets } from './auth.js';
 import { checkIfStudentFailByAbsences } from './checkIfStudentFailByAbsences.js';
 import { updateSpreadSheets } from './updateSpreadSheets.js';
 
-const { auth, googleSheets, spreadsheetId } = await getAuthSheets();
+async function main() {
+  const { auth, googleSheets, spreadsheetId } = await getAuthSheets();
 
-console.log('Running...')
-// get sheet title
-const sheetTitle = await googleSheets.spreadsheets.get({
-  auth,
-  spreadsheetId,
-}).then(response => response.data.sheets[0].properties.title)
+  console.log('Running...')
+  // get sheet title
+  const sheetTitle = await googleSheets.spreadsheets.get({
+    auth,
+    spreadsheetId,
+  }).then(response => response.data.sheets[0].properties.title)
 
-console.log('Getting total classes by semester...')
-// get total classes by semester
-const totalClassesBySemester = await googleSheets.spreadsheets.values.get({
-  auth,
-  spreadsheetId,
-  range: `${sheetTitle}!A2`,
-}).then(response => Number(response.data.values[0][0].match(/(?<=:\s)\d+/)[0]))
+  console.log('Getting total classes by semester...')
+  // get total classes by semester
+  const totalClassesBySemester = await googleSheets.spreadsheets.values.get({
+    auth,
+    spreadsheetId,
+    range: `${sheetTitle}!A2`,
+  }).then(response => Number(response.data.values[0][0].match(/(?<=:\s)\d+/)[0]))
 
-// get rows with absences and grades by students
-const rowsArray = await googleSheets.spreadsheets.values.get({
-  auth,
-  spreadsheetId,
-  range: `${sheetTitle}!B4:F27`,
-}).then(response => response.data.values)
+  // get rows with absences and grades by students
+  const rowsArray = await googleSheets.spreadsheets.values.get({
+    auth,
+    spreadsheetId,
+    range: `${sheetTitle}!B4:F27`,
+  }).then(response => response.data.values)
 
-// create an array from students status
-const statusRows = rowsArray.map((row, index) => {
-  console.log(`Calculating ${row[0]} status...`)
-  const missedClasses = row[1]
+  // create an array from students status
+  const statusRows = rowsArray.map((row, index) => {
+    console.log(`Calculating ${row[0]} status...`)
 
-  const isStudentFailByAbsences = checkIfStudentFailByAbsences(missedClasses, totalClassesBySemester)
+    //
+    const missedClasses = row[1]
 
-  // verify if the student is failed by absences
-  if(isStudentFailByAbsences) {
-    return row = ['Reprovado por Falta']
-  }
+    const isStudentFailByAbsences = checkIfStudentFailByAbsences(missedClasses, totalClassesBySemester)
 
-  // grades by student
-  const grades = row.slice(2, 5)
+    // verify if the student is failed by absences
+    if(isStudentFailByAbsences) {
+      return row = ['Reprovado por Falta', 0]
+    }
 
-  // calculate the average of the grades by student
-  const average = Math.round(grades.reduce((acc, grade) => acc + Number(grade), 0) / 3)
+    // grades by student
+    const grades = row.slice(2, 5)
 
-  // verify if the student is approved, failed or need to take the final exam
-  if(average >= 70) {
-    return row = ['Aprovado', 0]
-  }
+    // calculate the average of the grades by student
+    const average = Math.round(grades.reduce((acc, grade) => acc + Number(grade), 0) / 3)
 
-  if(average < 50) {
-    return row = ['Reprovado por nota']
-  }
+    // verify if the student is approved, failed or need to take the final exam
+    if(average >= 70) {
+      return row = ['Aprovado', 0]
+    }
 
-  if(average >= 50 && average < 70) {
-    const naf = 100 - average
-    return row = ['Exame Final', naf]
-  }
+    if(average < 50) {
+      return row = ['Reprovado por nota', 0]
+    }
 
-  console.log(`${row[0]} status is done`)
-})
+    if(average >= 50 && average < 70) {
+      const naf = 100 - average
+      return row = ['Exame Final', naf]
+    }
 
+    console.log(`${row[0]} status is done`)
+  })
 
+  // update the spreadsheet with the students status
+  updateSpreadSheets(`${sheetTitle}!G4:H27`, statusRows)
 
-updateSpreadSheets(`${sheetTitle}!G4:H27`, statusRows)
+  console.log(`Done!`)
+}
 
-console.log(`Done!`)
-
-
+main()
